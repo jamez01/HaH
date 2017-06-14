@@ -88,7 +88,7 @@ if( altspace.inClient )
 	if( ! /[&?]noPopup/.test(window.location.search) ){
 		altspace.open(
 			'https://goo.gl/forms/nJwTnvb6Zoc4ezK93', '_experience',
-			{icon: window.location.origin+'/static/icon.png', hidden: true});
+			{icon: window.location.origin+'/static/suggestion_box_icon.png', hidden: true});
 	}
 }
 else
