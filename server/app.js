@@ -1,6 +1,7 @@
 'use strict';
 
-var express = require('express'),
+var fs = require('fs'),
+	express = require('express'),
 	compression = require('compression'),
 	pug = require('pug'),
 	morgan = require('morgan'),
@@ -67,44 +68,71 @@ app.use(function(req,res)
 });
 
 // start server on configured port
-var server = app.listen(config.port, function(){
-	console.log('Listening on port', config.port);
-});
-
-// set up sockets
-var io = socketio(server);
-io.on('connection', function(socket)
+if(config.useSSL)
 {
-	// get gameId, put socket in correct room
-	var url = liburl.parse(socket.request.url, true);
-	var gameId = url.query.gameId;
-	var lockIds = url.query.lockIds && url.query.lockIds.split(',');
+	var https = require('https');
 
-	if(gameId)
+	loadFiles([config.sslKey, config.sslCert, config.sslIntermediate], function(data)
 	{
-		// initialize game
-		if(!activeGames[gameId])
-			activeGames[gameId] = new structures.Game(gameId, lockIds);
+		var opts = {
+			key: data[0],
+			cert: config.sslIntermediate ?
+				Buffer.concat([data[1], Buffer.from('\n', 'utf8'), data[2]]) :
+				data[1]
+		};
 
-		// associate socket with game
-		socket.gameId = gameId;
-		socket.join(gameId+'_clients');
-		registerGameListeners(socket);
+		var server = https.createServer(opts, app).listen(config.port, function(){
+			console.log('Listening at https://0.0.0.0:'+ config.port);
+		});
+		setupSocket(server);
+	});
+	
+}
+else {
+	var server = app.listen(config.port, function(){
+		console.log('Listening at http://0.0.0.0:'+ config.port);
+	});
+	setupSocket(server);
+}
 
-		// initialize new client
-		var game = activeGames[gameId];
-		socket.lockIds = game.lockIds;
-		socket.emit('init', game.getCleanTurnOrder(), game.state,
-			structures.Deck.blackCardList[game.currentBlackCard],
-			game.turnOrder.length > game.czar ? game.turnOrder[game.czar].id : null,
-			game.submissions || null
-		);
-		console.log('['+socket.gameId+'] Client connected', io.engine.clientsCount);
-	}
-	else {
-		socket.emit('error', 'No gameId specified');
-	}
-});
+
+function setupSocket(server)
+{
+	// set up sockets
+	var io = socketio(server);
+	io.on('connection', function(socket)
+	{
+		// get gameId, put socket in correct room
+		var url = liburl.parse(socket.request.url, true);
+		var gameId = url.query.gameId;
+		var lockIds = url.query.lockIds && url.query.lockIds.split(',');
+
+		if(gameId)
+		{
+			// initialize game
+			if(!activeGames[gameId])
+				activeGames[gameId] = new structures.Game(gameId, lockIds);
+
+			// associate socket with game
+			socket.gameId = gameId;
+			socket.join(gameId+'_clients');
+			registerGameListeners(socket);
+
+			// initialize new client
+			var game = activeGames[gameId];
+			socket.lockIds = game.lockIds;
+			socket.emit('init', game.getCleanTurnOrder(), game.state,
+				structures.Deck.blackCardList[game.currentBlackCard],
+				game.turnOrder.length > game.czar ? game.turnOrder[game.czar].id : null,
+				game.submissions || null
+			);
+			console.log('['+socket.gameId+'] Client connected', io.engine.clientsCount);
+		}
+		else {
+			socket.emit('error', 'No gameId specified');
+		}
+	});
+}
 
 
 function registerGameListeners(socket)
@@ -150,5 +178,36 @@ function registerGameListeners(socket)
 	socket.on('reload', function () {
 		console.log('['+this.gameId+'] Reloading all players');
 		this.server.to(this.gameId+'_clients').emit('reload');
+	});
+}
+
+function loadFiles(files, callback)
+{
+	var ret = [];
+	ret.length = files.length;
+
+	files.forEach(function(path, i)
+	{
+		if(!path){
+			ret[i] = null;
+			return;
+		}
+
+		fs.readFile(path, function(err, data){
+			if(err){
+				console.error(err);
+				ret[i] = null;
+			}
+			else {
+				ret[i] = data;
+			}
+
+			for(var j=0; j<ret.length; j++){
+				if(ret[j] === undefined)
+					return;
+			}
+
+			callback(ret);
+		});
 	});
 }
