@@ -14,8 +14,8 @@ module.exports = {
 	syncInterval: jsonConfig.syncInterval || 100,
 	gaPropertyId: jsonConfig.gaPropertyId || process.env.GA_PROPERTY_ID,
 	githubAccessToken: jsonConfig.githubAccessToken,
-	useSSL: jsonConfig.useSSL !== undefined ? jsonConfig.useSSL : false,
-	sslKey: jsonConfig.sslKey || '',
-	sslCert: jsonConfig.sslCert || '',
-	sslIntermediate: jsonConfig.sslIntermediate || ''
+	useSSL: jsonConfig.useSSL !== undefined ? jsonConfig.useSSL : !!process.env.SSL_KEY,
+	sslKey: jsonConfig.sslKey || process.env.SSL_KEY || '',
+	sslCert: jsonConfig.sslCert || process.env.SSL_CERT || '',
+	sslIntermediate: jsonConfig.sslIntermediate || process.env.SSL_INTERMED || ''
 }
