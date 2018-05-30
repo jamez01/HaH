@@ -65,8 +65,14 @@ if( altspace.inClient )
 	// convert all this altspace craziness into a normal coordinate space
 	// i.e. units in meters, z-axis up, with origin on the floor
 	renderer = altspace.getThreeJSRenderer({initialSerializationBufferSize: 640000});
-	altspace.getEnclosure().then(function(enc)
+	Promise.all([altspace.getEnclosure(), altspace.getSpace()]).then(function(args)
 	{
+		var enc = args[0];
+		var space = args[1];
+
+		// init game id to space sid
+		gameId = space.sid;
+
 		// reset coordinate space
 		root.scale.set(enc.pixelsPerMeter, enc.pixelsPerMeter, enc.pixelsPerMeter);
 		root.position.setY( -enc.innerHeight/2 );
@@ -149,8 +155,8 @@ function init()
 	root.add(gameObjects.presentation);
 
 	// grab game id from URL
-	gameId = /[?&]gameId=(\w+)\b/.exec(window.location.search);
-	if(gameId) gameId = gameId[1];
+	var match = /[?&]gameId=([^&]+)/.exec(window.location.search);
+	if(match) gameId = match[1];
 
 	// initialize game
 	if(!gameId)
