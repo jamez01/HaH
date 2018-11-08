@@ -50,7 +50,7 @@ function dealCards()
 
 			// draw necessary number of cards from deck
 			var additions = game.deck.dealWhiteCards(
-				10 + (structs.Deck.blackCardList[black].numDraws || 0) - player.hand.length
+				10 + (game.deck.blackCardList[black].numDraws || 0) - player.hand.length
 			);
 
 			// add cards to hand
@@ -59,11 +59,11 @@ function dealCards()
 
 		// convert indexes to full card descriptions
 		var fullHand = player.hand.map(function(cur){
-			return structs.Deck.whiteCardList[cur];
+			return game.deck.whiteCardList[cur];
 		});
 
 		// emit new cards
-		player.socket.emit('dealCards', fullHand, structs.Deck.blackCardList[black],
+		player.socket.emit('dealCards', fullHand, game.deck.blackCardList[black],
 			game.turnOrder[game.czar].id);
 	}
 
@@ -71,8 +71,8 @@ function dealCards()
 
 	// prompt observers to show updated hands
 	this.server.to(game.id+'_clients').emit('dealCards',
-		10 + (structs.Deck.blackCardList[black].numDraws || 0),
-		structs.Deck.blackCardList[black],
+		10 + (game.deck.blackCardList[black].numDraws || 0),
+		game.deck.blackCardList[black],
 		game.turnOrder[game.czar].id
 	);
 
@@ -117,7 +117,7 @@ function cardSelection(indexes)
 	}
 
 	// check submission validity
-	var numResponses = structs.Deck.blackCardList[game.currentBlackCard].numResponses || 1;
+	var numResponses = game.deck.blackCardList[game.currentBlackCard].numResponses || 1;
 	if(indexes.length !== numResponses)
 	{
 		this.emit('error', 'Invalid card selection, given '+indexes.length+' and needs '+numResponses);
@@ -157,7 +157,7 @@ function checkForLastSelection(game)
 		}
 		else if(p.selection !== null)
 			submissions[p.id] = p.selection.map(function(c){
-				return structs.Deck.whiteCardList[ p.hand[c] ];
+				return game.deck.whiteCardList[ p.hand[c] ];
 			});
 	}
 

@@ -96,41 +96,41 @@ else {
 }
 
 
-function setupSocket(server)
-{
+function setupSocket(server) {
 	// set up sockets
 	var io = socketio(server);
-	io.on('connection', function(socket)
-	{
+	io.on('connection', function (socket) {
 		// get gameId, put socket in correct room
 		var url = liburl.parse(socket.request.url, true);
 		var gameId = url.query.gameId;
 		var lockIds = url.query.lockIds && url.query.lockIds.split(',');
+		var deckUrl = url.query.deckUrl;
 
-		if(gameId)
-		{
-			// initialize game
-			if(!activeGames[gameId])
-				activeGames[gameId] = new structures.Game(gameId, lockIds);
+		structures.Deck.loadCardsFromUrl(deckUrl, function (deckData) {
+			if (gameId) {
+				// initialize game
+				if (!activeGames[gameId])
+					activeGames[gameId] = new structures.Game(gameId, lockIds, deckData);
 
-			// associate socket with game
-			socket.gameId = gameId;
-			socket.join(gameId+'_clients');
-			registerGameListeners(socket);
+				// associate socket with game
+				socket.gameId = gameId;
+				socket.join(gameId + '_clients');
+				registerGameListeners(socket);
 
-			// initialize new client
-			var game = activeGames[gameId];
-			socket.lockIds = game.lockIds;
-			socket.emit('init', game.getCleanTurnOrder(), game.state,
-				structures.Deck.blackCardList[game.currentBlackCard],
-				game.turnOrder.length > game.czar ? game.turnOrder[game.czar].id : null,
-				game.submissions || null
-			);
-			console.log('['+socket.gameId+'] Client connected', io.engine.clientsCount);
-		}
-		else {
-			socket.emit('error', 'No gameId specified');
-		}
+				// initialize new client
+				var game = activeGames[gameId];
+				socket.lockIds = game.lockIds;
+				socket.emit('init', game.getCleanTurnOrder(), game.state,
+					game.deck.blackCardList[game.currentBlackCard],
+					game.turnOrder.length > game.czar ? game.turnOrder[game.czar].id : null,
+					game.submissions || null
+				);
+				console.log('[' + socket.gameId + '] Client connected', io.engine.clientsCount);
+			}
+			else {
+				socket.emit('error', 'No gameId specified');
+			}
+		});
 	});
 }
 

@@ -1,7 +1,8 @@
 'use strict';
 
 var fs = require('fs'),
-	libpath = require('path');
+	libpath = require('path'),
+	request = require('request');
 
 
 
@@ -11,10 +12,18 @@ var fs = require('fs'),
 	and permutations of said list
 ***********************************************/
 
-function Deck()
-{
-	this.whiteDeck = Deck.getShuffledList(Deck.whiteCardList.length);
-	this.blackDeck = Deck.getShuffledList(Deck.blackCardList.length);
+function Deck(deckData) {
+	if (deckData) {
+		this.whiteCardList = deckData.white;
+		this.blackCardList = deckData.black;
+	}
+	else {
+		this.whiteCardList = Deck.whiteCardList;
+		this.blackCardList = Deck.blackCardList;
+	}
+
+	this.whiteDeck = Deck.getShuffledList(this.whiteCardList.length);
+	this.blackDeck = Deck.getShuffledList(this.blackCardList.length);
 
 	this.whiteDiscard = [];
 	this.blackDiscard = [];
@@ -72,6 +81,35 @@ Deck.loadCards = function()
 				});
 			}
 		});
+	});
+}
+
+Deck.loadCardsFromUrl = function (url, cb) {
+	Deck.urlCache = Deck.urlCache || {};
+
+	if (!url)
+		return cb();
+	if (Deck.urlCache[url])
+		return cb(Deck.urlCache[url]);
+
+	request(url, function (err, resp, body) {
+		if (err) {
+			console.error('Error loading', url);
+			console.error(err);
+			return cb();
+		}
+
+		try {
+			Deck.urlCache[url] = JSON.parse(body);
+		}
+		catch (e) {
+			data = null;
+			console.error('Error parsing', url);
+			console.error(e);
+			return cb();
+		}
+
+		return cb(Deck.urlCache[url]);
 	});
 }
 
@@ -260,7 +298,7 @@ Game.prototype.kickVoteForId = function(id)
 Game.prototype.getCleanTurnOrder = function()
 {
 	return this.turnOrder.map(function(cur){
-		var winCards = cur.wins.map(x => Deck.blackCardList[x]);
+		var winCards = cur.wins.map(x => this.deck.blackCardList[x]);
 		return {id: cur.id, displayName: cur.displayName, seatNum: cur.seatNum, handLength: cur.handLength, wins: winCards};
 	});
 }
