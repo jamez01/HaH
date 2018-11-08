@@ -158,6 +158,10 @@ function init()
 	var match = /[?&]gameId=([^&]+)/.exec(window.location.search);
 	if(match) gameId = match[1];
 
+	match = /[?&]deckUrl=([^&]+)/.exec(window.location.search);
+	if(match) var deckUrl = match[1];
+	else deckUrl = undefined;
+
 	// initialize game
 	if(!gameId)
 	{
@@ -167,7 +171,7 @@ function init()
 	}
 	else
 	{
-		Game.connectToGame(gameId);
+		Game.connectToGame(gameId, deckUrl);
 
 	}
 }

@@ -205,7 +205,7 @@ function Player(playerId, displayName, socket)
 	particular game in progress
 ***********************************************/
 
-function Game(id, lockIds)
+function Game(id, lockIds, deckData)
 {
 	// the game's id
 	this.id = id;
@@ -214,7 +214,7 @@ function Game(id, lockIds)
 	this.lockIds = lockIds;
 
 	// this particular game's order of cards
-	this.deck = new Deck();
+	this.deck = new Deck(deckData);
 
 	// one of 'roundStarted', 'playerSelectionPending',
 	//   'czarSelectionPending', 'roundFinished'

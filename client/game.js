@@ -55,7 +55,7 @@ var lockIds = null;
 		});
 	}
 
-	function connectToGame(gameId)
+	function connectToGame(gameId, deckUrl)
 	{
 		lockIds = /[&?]lockIds=([^&]+)/.exec(window.location.search);
 		if (lockIds) {
@@ -64,7 +64,7 @@ var lockIds = null;
 
 		getUser().then(function () {
 			// initialize the socket connection
-			socket = io('/?gameId='+gameId+(lockIds?'&lockIds='+lockIds.join(','):''));
+			socket = io('/?gameId='+gameId+(lockIds?'&lockIds='+lockIds.join(','):'')+(deckUrl?'&deckUrl='+deckUrl:''));
 
 			// debug listener
 			var onevent = socket.onevent;

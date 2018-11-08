@@ -108,6 +108,7 @@ function setupSocket(server) {
 
 		structures.Deck.loadCardsFromUrl(deckUrl, function (deckData) {
 			if (gameId) {
+
 				// initialize game
 				if (!activeGames[gameId])
 					activeGames[gameId] = new structures.Game(gameId, lockIds, deckData);
