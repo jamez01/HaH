@@ -53,7 +53,7 @@ app.get('/play', function(req,res)
 			for(var i=0; i<16; i++)
 				id += ab[ Math.floor(Math.random()*ab.length) ];
 		} while(activeGames[id]);
-		res.redirect('?gameId='+id);
+		res.redirect(req.url + (req.url.indexOf('?') === -1 ? '?' : '&') + 'gameId=' + id);
 	}
 	else {
 		console.log('gaPropertyId', config.gaPropertyId);
