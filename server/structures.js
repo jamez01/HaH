@@ -93,7 +93,7 @@ Deck.loadCardsFromUrl = function (url, cb) {
 		return cb(Deck.urlCache[url]);
 
 	request(url, function (err, resp, body) {
-		if (err) {
+		if (err || resp.statusCode >= 400) {
 			console.error('Error loading', url);
 			console.error(err);
 			return cb();
