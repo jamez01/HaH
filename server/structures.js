@@ -103,7 +103,6 @@ Deck.loadCardsFromUrl = function (url, cb) {
 			Deck.urlCache[url] = JSON.parse(body);
 		}
 		catch (e) {
-			data = null;
 			console.error('Error parsing', url);
 			console.error(e);
 			return cb();
