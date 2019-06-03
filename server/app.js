@@ -92,7 +92,7 @@ else {
 	var server = app.listen(config.port, function(){
 		console.log('Listening at http://0.0.0.0:'+ config.port);
 	});
-	server.on('error', err => {
+	server.on('error', function(err) {
 		console.error(err);
 	});
 	setupSocket(server);
@@ -135,7 +135,6 @@ function setupSocket(server)
 			socket.emit('error', 'No gameId specified');
 		}
 	});
-	io.on('')
 }
 
 
