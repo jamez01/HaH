@@ -3,9 +3,6 @@ FROM node:8
 # Create app directory
 WORKDIR /usr/src/app
 
-ENV PORT=80
-ENV BASE_URL=http://troyk88.openode.io/
-
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
